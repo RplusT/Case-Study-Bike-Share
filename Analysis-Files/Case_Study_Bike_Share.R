@@ -7,7 +7,6 @@ library(lubridate)
 library(here)
 library(readr)
 library(dplyr)
-setwd("/Users/roberttiong/Documents/Data Science/Case Study - Bike Share")
 
 # uploading dataset ----
 yearly_tripdata <- read_csv("202004-202103-divvy-tripdata_v20210428.csv")
@@ -337,25 +336,6 @@ types_end_station_long %>%
 ## the same is also true the other way around where there are some casual riders in stations near residential areas suggesting that...
 ## ... casual riders who use the bikes for commuting can be targets for conversion
 
-# Conclusion ----
-### The main difference between casual riders and members is that the former uses the bikes mainly for leisure.
-### This is evidenced by the fact that they ride more during the weekends, have longer ride durations, and originate and end their rides near local attractions
-### Members meanwhile have a more set routine given their ride durations are more consistent during the week and throughout the day.
-### The bike stations they use are near residential areas and the city center suggesting they use the bikes mainly for commuting.
-
-# Recommendations for converting casual riders to members ----
-# 1 Marketing efforts should be focused on areas near local attractions. 
-# Collaborations with commercial establishments in these areas should be explored.
-# Examples: Discount vouchers for new members, a member point system that they can use nearby shops
-# 2 In terms of scheduling, the best time to target casual riders are during weekend afternoons, 4-6pm.
-# They do most of their riding during this time. To maximize the reach, we should focus our marketing efforts during the summer months,
-# ... as riding activity is significantly higher during this time, given the good weather and a better chance to experience the outdoors on a bike.
-# 3 While casual riders do mostly frequent local attractions, there is also room for activations...
-# ... involving members in stations near residential areas and the city center.
-# There are also casual riders who use the bikes for commuting and members are the best positioned to demonstrate the benefits of a full membership.
-# Examples can be providing referral discounts to members which they can share to a set number of casual riders. Members can then be compensated with discounted membership rates.
-# Weekend group rides can also be a way to activate more members. Members can lead casual riders around the city, with a set route provided by the company.
-# Stops along the way can be setup with various marketing activation involving the community or more local shops.
 
 # per station analysis (departures and arrivals) ----
 # departures per station
