@@ -1,0 +1,333 @@
+---
+title: "Case Study: Bike Sharing Company"
+author: "Rob Tiong"
+date: "May 1, 2021"
+output: html_document
+---
+This case study involves a fictional bike sharing company whose goal is to increase its annual memberships. The business task is to determine the differences in riding behavior of members and casual riders. From these insights, the bike sharing company's marketing team can design a new marketing strategy to convert casual riders into annual members.  
+
+The dataset used is from a real bike sharing company based in Chicago, Illinois, USA. This analysis covers data from April 2020 to March 2021 which involves 3,489,748 bike rides.
+For more information on the dataset and data preprocessing, click [here](https://docs.google.com/document/d/1pi422jGBwuBKHLtsa1zVJzoBGDvrUTQYTNiPNzuGDnU/edit?usp=sharing). The dataset has been made available under this [license](https://www.divvybikes.com/data-license-agreement).  
+
+
+*Setting up the environment*
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(here)
+library(readr)
+library(dplyr)
+```
+
+*Uploading the dataset*
+```{r message=FALSE, warning=FALSE}
+yearly_tripdata <- read_csv("202004-202103-divvy-tripdata_v20210428.csv")
+```
+
+*Cleaning the dataset*
+```{r}
+yearly_tripdata$date <- as.Date(yearly_tripdata$started_at)
+yearly_tripdata$day_of_week <- as.factor(yearly_tripdata$day_of_week)
+yearly_tripdata$month <- as.factor(yearly_tripdata$month)
+yearly_tripdata$hour_of_day <- as.factor(format(yearly_tripdata$started_at,"%H"))
+
+levels(yearly_tripdata$day_of_week) <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+levels(yearly_tripdata$month) <- c ("January", "February", "March", "April", "May", "June", "July", "August", "September",
+                                    "October", "November", "December")
+```
+
+*Removing rides with negative ride durations*
+```{r}
+yearly_tripdata_v2 <- yearly_tripdata[!(yearly_tripdata$duration<0),]
+```
+
+#### Analysis
+
+First let's compare ride durations between casual riders and members.  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+yearly_tripdata_v2 %>%
+  group_by(member_casual) %>%
+  summarise(average_duration = mean(duration)/60) %>%
+  arrange(member_casual) %>%
+  ggplot(aes(x = member_casual, y = average_duration)) +
+  geom_col(aes(fill = member_casual)) +
+  xlab("Rider Type") +
+  ylab("Average Ride Duration (mins)") +
+  labs(title = "Comparison of ride duration") +
+  theme(plot.title = element_text(face = "bold"), legend.position = "none")
+```
+
+It looks like casual riders ride a lot longer at around an hour. Members meanwhile have significantly shorter rides at an average of around 16 minutes.  
+  
+
+Next let's take a look at how much riding each group does on a daily basis.  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+yearly_tripdata_v2 %>%
+  group_by(member_casual, day_of_week) %>%
+  summarise(number_of_rides = n(),
+            average_duration = mean(duration)) %>%
+  arrange(member_casual, day_of_week) %>%
+  ggplot(aes(x = day_of_week, y = number_of_rides, fill = member_casual)) +
+  geom_col(position = "dodge") +
+  xlab("Day") +
+  ylab("No. of Rides") +
+  labs(fill = "Rider Type", title = "No. of rides per day ", 
+       subtitle = "Casual v Member") +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+Members ride a lot more, with the number of rides per day being consistent while casual riders ride most often on the weekend, especially Saturdays. In terms of proportion, casual rides are just around three-quarters of the number of rides by members on weekdays.  
+  
+  
+Given this, I wanted to see if the average ride duration held true regardless of the day.  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+yearly_tripdata_v2 %>%
+  group_by(member_casual, day_of_week) %>%
+  summarise(number_of_rides = n(),
+            average_duration = mean(duration)/60) %>%
+  arrange(member_casual, day_of_week) %>%
+  ggplot(aes(x = day_of_week, y = average_duration, fill = member_casual)) +
+  geom_col(position = "dodge") +
+  xlab("Day") +
+  ylab("Average Ride Duration (mins)") +
+  labs(fill = "Rider Type", title = "Daily ride duration ", 
+       subtitle = "Casual v Member") +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+Looks like it does.  
+These initial findings suggest that casual riders use the bikes more for leisure as they do most of their riding on weekends and that their ride durations are longer.  
+  
+  
+Let's dig a little deeper into the riding behavior *during* the day.  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+yearly_tripdata_v2 %>%
+  group_by(member_casual, hour_of_day) %>%
+  summarise(number_of_rides = n(),
+            average_duration = mean(duration)) %>%
+  filter(member_casual == "casual") %>%
+  arrange(member_casual, hour_of_day) %>%
+  ggplot(aes(x = hour_of_day, y = number_of_rides, fill = member_casual)) +
+  geom_col() +
+  xlab("Time of Day") +
+  ylab("No. of Rides") + 
+  labs(title = "Casual rides throughout the day", subtitle = "Based on time of day") +
+  theme(legend.position = "none", plot.title = element_text(face = "bold"))
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+yearly_tripdata_v2 %>%
+  group_by(member_casual, hour_of_day) %>%
+  summarise(number_of_rides = n(),
+            average_duration = mean(duration)) %>%
+  filter(member_casual == "member") %>%
+  arrange(member_casual, hour_of_day) %>%
+  ggplot(aes(x = hour_of_day, y = number_of_rides)) +
+  geom_col(fill = "#01bfc4") +
+  xlab("Time of Day") +
+  ylab("No. of Rides") + 
+  labs(title = "Member rides throughout the day", subtitle = "Based on time of day") +
+  theme(legend.position = "none", plot.title = element_text(face = "bold"))
+```
+
+Casual riders ride a lot more after lunch, with the highest frequency during 4-6pm. The same goes for members but they also do a lot of riding during the morning, up until mid-afternoon.  
+  
+  
+Now let's look at ride duration again, this time throughout the day.  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+yearly_tripdata_v2 %>%
+  group_by(member_casual, hour_of_day) %>%
+  summarise(number_of_rides = n(),
+            average_duration = mean(duration)/60) %>%
+  arrange(member_casual, hour_of_day) %>%
+  ggplot(aes(x = hour_of_day, y = average_duration, fill = member_casual)) +
+  geom_col(position = "dodge") +
+  xlab("Time of Day") +
+  ylab("Average Ride Duration (mins)") +
+  labs(fill = "Rider Type", title = "Ride duration throughout the day", 
+       subtitle = "Casual v Member") +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+On average, casual riders ride 30-60 minutes but then this spikes to 1-2 hour rides around midnight to early morning.  
+Members meanwhile maintain their average ride length of 16 minutes regardless of the time. This could probably mean that rides by members are planned or routinary, perhaps mostly for commuting.  
+  
+  
+Zooming out a bit, checking ride frequency on a monthly basis could support some of the earlier points.  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+yearly_tripdata_v2 %>%
+  group_by(member_casual, month) %>%
+  summarise(number_of_rides = n(),
+            average_duration = mean(duration)) %>%
+  arrange(member_casual, month) %>%
+  ggplot(aes(x = month, y = number_of_rides, fill = member_casual)) +
+  geom_col(position = "dodge") +
+  xlab("Month") +
+  ylab("No. of Rides") +
+  labs(fill = "Rider Type", title = "Riding Seasonality", 
+       subtitle = "Casual v Member") +
+  theme(plot.title = element_text(face = "bold"), axis.text.x = element_text(angle = 45))
+```
+
+In terms of seasonality, as expected most of the riding occurs in the summer (US-based).  
+This seems especially true with casual riders as they mostly ride bikes for leisure which is perfect for the summer.  
+  
+  
+
+Most of the analysis so far has been around time. Let's take a closer look at the stations where these rides occur.  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+casual_start_station <- yearly_tripdata_v2 %>%
+  group_by(start_station_name, member_casual) %>%
+  summarise(number_of_rides = n()) %>%
+  filter(start_station_name != "NA") %>%
+  filter(member_casual == "casual") %>%
+  rename(casual_rides = number_of_rides) %>%
+  select(start_station_name, casual_rides)
+  
+casual_start_station %>% 
+  arrange(desc(casual_rides))%>%
+  head(10) %>%
+  ggplot(aes(x = reorder(start_station_name, casual_rides), y = casual_rides)) +
+  geom_col(fill = "#f8756d") +
+  coord_flip() + 
+  xlab("Station Name") +
+  ylab("No. of Rides") +
+  labs(title = "Where do casual riders start their rides?", subtitle = "Top 10 start stations for casual riders") +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+These stations are near local attractions in the city such as Lake Michigan and Millenium Park. This further evidences that casual riders ride bikes mostly for leisure and looks like it is around tourist attractions. This could mean marketing strategies can revolve around collaborations with local establishments such as giving discounts or special passes for newly registered members.  
+  
+
+Now let's see how this looks like for members.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+member_start_station <- yearly_tripdata_v2 %>%
+  group_by(start_station_name, member_casual) %>%
+  summarise(number_of_rides = n()) %>%
+  filter(start_station_name != "NA") %>%
+  filter(member_casual == "member") %>%
+  rename(member_rides = number_of_rides) %>%
+  select(start_station_name, member_rides)
+
+member_start_station %>% 
+  arrange(desc(member_rides))%>%
+  head(10) %>%
+  ggplot(aes(x = reorder(start_station_name, member_rides), y = member_rides)) +
+  geom_col(fill = "#01bfc4") +
+  coord_flip() + 
+  xlab("Station Name") +
+  ylab("No. of Rides") +
+  labs(title = "Where do members start their rides?", subtitle = "Top 10 start stations for members") +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+These stations are more within the city or near residential areas, which supports the claim that members use the bikes primarily for commuting.  
+  
+Now let's check the stations where these rides end.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+casual_end_station <- yearly_tripdata_v2 %>%
+  group_by(end_station_name, member_casual) %>%
+  summarise(number_of_rides = n()) %>%
+  filter(end_station_name != "NA") %>%
+  filter(member_casual == "casual") %>%
+  rename(casual_rides = number_of_rides) %>%
+  select(end_station_name, casual_rides)
+
+casual_end_station %>% 
+  arrange(desc(casual_rides))%>%
+  head(10) %>%
+  ggplot(aes(x = reorder(end_station_name, casual_rides), y = casual_rides)) +
+  geom_col(fill = "#f8756d") +
+  coord_flip() + 
+  xlab("Station Name") +
+  ylab("No. of Rides") +
+  labs(title = "Where do casual riders end their rides?", subtitle = "Top 10 ending stations for casual riders") +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+member_end_station <- yearly_tripdata_v2 %>%
+  group_by(end_station_name, member_casual) %>%
+  summarise(number_of_rides = n()) %>%
+  filter(end_station_name != "NA") %>%
+  filter(member_casual == "member") %>%
+  rename(member_rides = number_of_rides) %>%
+  select(end_station_name, member_rides)
+
+member_end_station %>% 
+  arrange(desc(member_rides))%>%
+  head(10) %>%
+  ggplot(aes(x = reorder(end_station_name, member_rides), y = member_rides)) +
+  geom_col(fill = "#01bfc4") +
+  coord_flip() + 
+  xlab("Station Name") +
+  ylab("No. of Rides") +
+  labs(title = "Where do members end their rides?", subtitle = "Top 10 ending stations for members") +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+Majority of casual riders end their rides within the same stations near local attractions. Marketing efforts can really focus on these stations, with a mix of "start of trip" and "end of trip" activations.  
+Unsurprisingly, members also mostly end at the stations they started with.  
+  
+  
+It's also worth checking the stations with the most activity, regardless of member type.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+types_start_station <- merge(casual_start_station, member_start_station, by = "start_station_name",
+                             all.x = TRUE, all.y = TRUE)
+types_start_station$total_rides <- types_start_station$casual_rides + types_start_station$member_rides
+
+types_start_station_long <- gather(types_start_station, "member_casual", "rides", 2:3)
+
+types_start_station_long %>%
+  arrange(desc(total_rides)) %>%
+  head(20) %>%
+  ggplot(aes(x = reorder(start_station_name, total_rides), y = rides, fill = member_casual)) +
+  geom_col() +
+  coord_flip() + 
+  xlab("Station Name") +
+  ylab("No. of Rides") +
+  labs(title = "Top 10 Stations by No. of Rides") +
+  scale_fill_discrete(name = "Rider Type", labels = c("Casual", "Member")) +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+The top casual rider stations are also used by quite a number of members, suggesting there is room for conversion efforts involving members like referral codes, group rides, etc.  
+  
+The same is also true the other way around where there are some casual riders in stations near residential areas suggesting that casual riders who use the bikes for commuting can be targets for conversion as well.  
+
+
+
+#### Conclusion
+The main difference between casual riders and members is that the former uses the bikes mainly for leisure. This is evidenced by the fact that they ride more during the weekends, have longer ride durations, and originate and end their rides near local attractions.  
+
+Members meanwhile have a more set routine given their ride durations are more consistent during the week and throughout the day. The bike stations they use are near residential areas and the city center suggesting they use the bikes mainly for commuting.  
+  
+  
+--
+
+#### Recommendations
+##### 1. Marketing efforts should be focused on areas near local attractions.
+* Collaborations with commercial establishments in these areas should be explored.
+* Examples are providing discount vouchers for new members and/or a member point system wherein points can be redeemed in nearby shops.
+
+##### 2. In terms of scheduling, the best time to target casual riders are during weekend afternoons between 4-6pm.
+* Casual riders do most of their riding during this time.
+* To maximize the reach, marketing efforts would be best focused during the summer months as riding activity is significantly higher given the weather and a better outdoor experience on the bike.
+
+##### 3. While casual riders mostly frequent local attractions, there is also room for converting casual riders involving members in stations near residential areas and the city center.
+* There are also casual riders who use the bikes for commuting and members are the best positioned to demonstrate the benefits of a full membership.
+* Examples can be providing referral discounts to members which they can share to a set number of casual riders. Members can then be compensated with discounted membership rates or other promotions.
+* Weekend group rides can also be a way to activate more members. Members can lead casual riders around the city, with a set route provided by the company.
+* Stops along the way can be setup with various marketing activations involving the community or more local shops.
