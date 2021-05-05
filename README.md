@@ -1,4 +1,4 @@
-# Case-Study: Bike Share
+# Case Study: Bike Share
 
 This case study involves a fictional bike sharing company whose goal is to increase its annual memberships. The business task is to determine the differences in riding behavior of members and casual riders. From these insights, the bike sharing company’s marketing team can design a new marketing strategy to convert casual riders into annual members.
 
