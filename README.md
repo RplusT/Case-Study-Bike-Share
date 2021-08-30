@@ -13,6 +13,7 @@ Members meanwhile have a more set routine given their ride durations are more co
 
 –
 ## Recommendations
+
 1. Marketing efforts should be focused on areas near local attractions.
 
     Collaborations with commercial establishments in these areas should be explored.
