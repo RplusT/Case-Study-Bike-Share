@@ -11,7 +11,7 @@ The main difference between casual riders and members is that the former uses th
 
 Members meanwhile have a more set routine given their ride durations are more consistent during the week and throughout the day. The bike stations they use are near residential areas and the city center suggesting they use the bikes mainly for commuting.
 
-–
+
 ### Recommendations
 
 1. Marketing efforts should be focused on areas near local attractions.
