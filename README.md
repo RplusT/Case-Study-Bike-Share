@@ -5,14 +5,14 @@ This case study involves a fictional bike sharing company whose goal is to incre
 The dataset used is from a real bike sharing company based in Chicago, Illinois, USA. This analysis covers data from April 2020 to March 2021 which involves 3,489,748 bike rides. For more information on the dataset and data preprocessing, click [here](https://docs.google.com/document/d/1pi422jGBwuBKHLtsa1zVJzoBGDvrUTQYTNiPNzuGDnU/edit?usp=sharing). The dataset has been made available under this [license](https://www.divvybikes.com/data-license-agreement).
 
 
-## Conclusion/Findings
+### Conclusion/Findings
 
 The main difference between casual riders and members is that the former uses the bikes mainly for leisure. This is evidenced by the fact that they ride more during the weekends, have longer ride durations, and originate and end their rides near local attractions.
 
 Members meanwhile have a more set routine given their ride durations are more consistent during the week and throughout the day. The bike stations they use are near residential areas and the city center suggesting they use the bikes mainly for commuting.
 
 –
-## Recommendations
+### Recommendations
 
 1. Marketing efforts should be focused on areas near local attractions.
 
